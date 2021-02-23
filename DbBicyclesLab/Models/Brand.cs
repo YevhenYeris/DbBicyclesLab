@@ -15,18 +15,22 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Назва бренду")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(25, ErrorMessage = ErrorMessages.StringLength)]
         public string BrandName { get; set; }
+        [Display(Name = "Країна")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
         public int CountryId { get; set; }
+        [Display(Name = "Представник в Україні")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
         public int DealerId { get; set; }
         [Display(Name = "Опис")]
+        [StringLength(1500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
 
         [Display(Name = "Країна")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
         public virtual Country Country { get; set; }
         [Display(Name = "Представник в Україні")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
         public virtual AuthorizedDealer Dealer { get; set; }
         public virtual ICollection<BicycleModel> BicycleModels { get; set; }
     }

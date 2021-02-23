@@ -15,7 +15,8 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Назва країни")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(20, ErrorMessage = ErrorMessages.StringLength)]
         public string CountryName { get; set; }
 
         public virtual ICollection<Brand> Brands { get; set; }

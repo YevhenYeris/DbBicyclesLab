@@ -10,12 +10,14 @@ namespace DbBicyclesLab.Models
     {
         public int Id { get; set; }
         [Display(Name = "Опис")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(1500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
+        [Display(Name = "Розмір-Колір-Модель")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
         public int? SizeColorModelId { get; set; }
 
         [Display(Name = "Розмір-Колір-Модель")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
         public virtual SizeColorModel SizeColorModel { get; set; }
     }
 }

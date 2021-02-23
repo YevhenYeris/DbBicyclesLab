@@ -15,7 +15,8 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Для кого")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(25, ErrorMessage = ErrorMessages.StringLength)]
         public string GenderName { get; set; }
 
         public virtual ICollection<BicycleModel> BicycleModels { get; set; }

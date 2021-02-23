@@ -55,12 +55,13 @@ namespace DbBicyclesLab.Controllers
             return View();
         }
 
-        public async void CreateBicycle(int? id)
+        public async Task<IActionResult> CreateBicycle(int? id)
         {
-            BicyclesController bicyclesController = new BicyclesController(_context);
-            Bicycle bicycle = new Bicycle();
-            bicycle.SizeColorModelId = id;
-            await bicyclesController.Create(bicycle);
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Create", "Bicycles", new { sizeColorModelId = id });
+            return await Task.Run<IActionResult>(() =>
+            {
+                return redirectToActionResult;
+            });
         }
 
         // POST: SizeColorModels/Create

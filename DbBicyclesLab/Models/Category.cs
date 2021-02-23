@@ -15,9 +15,11 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Назва категорії")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(25, ErrorMessage = ErrorMessages.StringLength)]
         public string CategoryName { get; set; }
         [Display(Name = "Опис")]
+        [StringLength(1500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
 
         public virtual ICollection<BicycleModel> BicycleModels { get; set; }

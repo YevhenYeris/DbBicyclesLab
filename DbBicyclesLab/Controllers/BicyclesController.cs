@@ -45,9 +45,12 @@ namespace DbBicyclesLab.Controllers
         }
 
         // GET: Bicycles/Create
-        public IActionResult Create()
+        public IActionResult Create(int? sizeColorModelId)
         {
-            ViewData["SizeColorModelId"] = new SelectList(_context.SizeColorModels, "Id", "Id");
+            if (sizeColorModelId != null)
+                ViewData["SizeColorModelId"] = new SelectList(_context.SizeColorModels, "Id", "Id", sizeColorModelId);
+            else
+                ViewData["SizeColorModelId"] = new SelectList(_context.SizeColorModels, "Id", "Id");
             return View();
         }
 

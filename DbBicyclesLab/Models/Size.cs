@@ -15,7 +15,8 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Назва розміру")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(25, ErrorMessage = ErrorMessages.StringLength)]
         public string SizeName { get; set; }
 
         public virtual ICollection<SizeColorModel> SizeColorModels { get; set; }

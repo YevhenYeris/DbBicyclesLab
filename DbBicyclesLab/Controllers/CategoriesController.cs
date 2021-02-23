@@ -133,6 +133,15 @@ namespace DbBicyclesLab.Controllers
             return View(category);
         }
 
+        public async Task<IActionResult> GoToModels(int id)
+        {
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "BicycleModels", new { id = id });
+            return await Task.Run<IActionResult>(() =>
+            {
+                return redirectToActionResult;
+            });
+        }
+
         // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

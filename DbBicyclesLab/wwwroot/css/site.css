@@ -2,9 +2,10 @@
 for details on configuring this project to bundle and minify static web assets. */
 
 a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+    font: Courier, monospace;
 }
 
 /* Provide sufficient contrast against white background */
@@ -59,8 +60,10 @@ html {
 }
 
 body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    background-color: #f1f1f1;
+    /*background-image:url(/citybike.jpg);*/
 }
 .footer {
   position: absolute;
@@ -68,4 +71,5 @@ body {
   width: 100%;
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
+  background-color:#593196;
 }

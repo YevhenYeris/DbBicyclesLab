@@ -13,14 +13,18 @@ namespace DbBicyclesLab.Models
             Brands = new HashSet<Brand>();
         }
 
+        public string Title { get; } = "Офіційні представники в Україні";
         public int Id { get; set; }
         [Display(Name = "Назва")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(45, ErrorMessage = ErrorMessages.StringLength)]
         public string DealerName { get; set; }
         [Display(Name = "Адреса веб-сайту")]
-        [Required(ErrorMessage = "Поле не може бути порожнім")]
+        [Required(ErrorMessage = ErrorMessages.Required)]
+        [StringLength(2048, ErrorMessage = ErrorMessages.StringLength)]
         public string WebsiteAddress { get; set; }
         [Display(Name = "Опис")]
+        [StringLength(1500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
 
         public virtual ICollection<Brand> Brands { get; set; }

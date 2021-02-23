@@ -21,10 +21,13 @@ namespace DbBicyclesLab.Controllers
         }
 
         // GET: BicycleModels
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? id)
         {
             var dBBicyclesContext = _context.BicycleModels.Include(b => b.Brand).Include(b => b.Category).Include(b => b.Gender);
-            return View(await dBBicyclesContext.ToListAsync());
+            if (id != null)
+                return View(await dBBicyclesContext.Where(m => m.CategoryId == id).ToListAsync());
+            else
+                return View(await dBBicyclesContext.ToListAsync());
         }
 
         // GET: BicycleModels/Details/5
