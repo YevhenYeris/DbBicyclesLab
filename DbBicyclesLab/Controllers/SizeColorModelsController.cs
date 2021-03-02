@@ -176,5 +176,17 @@ namespace DbBicyclesLab.Controllers
         {
             return _context.SizeColorModels.Any(e => e.Id == id);
         }
+
+        public async Task<IActionResult> GoToBicycles(int? id)
+        {
+            SizeColorModel model = _context.SizeColorModels.Where(b => b.Id == id).FirstOrDefault();
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "Bicycles", new {
+                    size = model.SizeId, color = model.ColorId, model = model.ModelId });
+
+            return await Task.Run<IActionResult>(() =>
+            {
+                return redirectToActionResult;
+            });
+        }
     }
 }

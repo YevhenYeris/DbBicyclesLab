@@ -27,7 +27,8 @@ namespace DbBicyclesLab.Models
         [Display(Name = "Опис")]
         [StringLength(1500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
-
+        [Display(Name = "Зображення")]
+        public virtual byte[] Image { get; set; }
         [Display(Name = "Країна")]
         public virtual Country Country { get; set; }
         [Display(Name = "Представник в Україні")]

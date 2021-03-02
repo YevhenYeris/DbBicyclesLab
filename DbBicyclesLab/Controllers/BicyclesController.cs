@@ -19,10 +19,29 @@ namespace DbBicyclesLab.Controllers
         }
 
         // GET: Bicycles
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? size, int? color, int? model)
         {
             var dBBicyclesContext = _context.Bicycles.Include(b => b.SizeColorModel);
-            return View(await dBBicyclesContext.ToListAsync());
+            //return View(await dBBicyclesContext.ToListAsync());
+
+            BicycleListViewModel listViewModel = new BicycleListViewModel(_context);
+            if (size != null)
+            {
+                /*FIX ASYNC*/
+                listViewModel.Bicycles = listViewModel.Bicycles.Where(b => _context.SizeColorModels.Where(
+                    s => s.Id == b.SizeColorModelId).Select(s => s.SizeId).FirstOrDefaultAsync().Result == size);
+            }
+            if (color != null)
+            {
+                listViewModel.Bicycles = listViewModel.Bicycles.Where(b => _context.SizeColorModels.Where(
+                    s => s.Id == b.SizeColorModelId).Select(s => s.ColorId).FirstOrDefaultAsync().Result == color);
+            }
+            if (model != null)
+            {
+                listViewModel.Bicycles = listViewModel.Bicycles.Where(b => _context.SizeColorModels.Where(
+                    s => s.Id == b.SizeColorModelId).Select(s => s.ModelId).FirstOrDefaultAsync().Result == model);
+            }
+            return View(listViewModel);
         }
 
         // GET: Bicycles/Details/5
@@ -40,6 +59,10 @@ namespace DbBicyclesLab.Controllers
             {
                 return NotFound();
             }
+
+            bicycle.SizeColorModel.Size = _context.Sizes.Find(bicycle.SizeColorModel.SizeId);
+            bicycle.SizeColorModel.Color = _context.Colors.Find(bicycle.SizeColorModel.ColorId);
+            bicycle.SizeColorModel.Model = _context.BicycleModels.Find(bicycle.SizeColorModel.ModelId);
 
             return View(bicycle);
         }

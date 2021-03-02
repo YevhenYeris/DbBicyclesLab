@@ -1,0 +1,64 @@
+﻿@model DbBicyclesLab.Models.Brand
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>@Html.DisplayFor(model => model.BrandName)</h1>
+            <div>
+                <a asp-action="CommonIndex">Назад</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            @if (Model.Image != null)
+            {
+                <img style='width:70%; height:auto; margin:10px; background-color:white; padding:15px' src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Image))" />
+            }
+        </div>
+        <div class="col-6">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Дані</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td>
+                        @Html.DisplayNameFor(model => model.BrandName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model.BrandName)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.DisplayNameFor(model => model.Country)
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(model => model.Country.CountryName)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.DisplayNameFor(model => model.Dealer)
+                    </td>
+                    <td>
+                        <a href=@Html.DisplayFor(model => model.Dealer.WebsiteAddress)>
+                            @Html.DisplayFor(model => model.Dealer.DealerName)
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </div>
+    <div class="row">
+        <h2>@Html.DisplayNameFor(model => model.Description)</h2>
+        @Html.DisplayFor(model => model.Description)
+    </div>
+</div>

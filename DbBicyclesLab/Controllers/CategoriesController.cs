@@ -133,9 +133,9 @@ namespace DbBicyclesLab.Controllers
             return View(category);
         }
 
-        public async Task<IActionResult> GoToModels(int id)
+        public async Task<IActionResult> GoToModels(int? id)
         {
-            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "BicycleModels", new { id = id });
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "BicycleModels", new { category = id });
             return await Task.Run<IActionResult>(() =>
             {
                 return redirectToActionResult;

@@ -37,10 +37,11 @@
                 @Html.DisplayFor(modelItem => item.Size.SizeName)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
-                <a asp-action="CreateBicycle" asp-route-id="@item.Id">Create Bicycle</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                <a asp-action="CreateBicycle" asp-route-id="@item.Id">Додати велосипед</a> |
+                <a asp-action="GoToBicycles" asp-route-id="@item.Id">Велосипеди</a>
             </td>
         </tr>
 }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DbBicyclesLab.Models.Bicycle>
+﻿@model BicycleListViewModel
 
 @{
     ViewData["Title"] = "Index";
@@ -6,36 +6,55 @@
 
 <h1>Велосипеди</h1>
 
-<p>
-    <a asp-action="Create">Додати новий</a>
-</p>
+<div>
+    <form method="get">
+        <div class="form-inline">
+            <label class="control-label" style="margin:10px">Розмір: </label>
+            @Html.DropDownList("size", new SelectList(Model.Sizes.OrderBy(s => s.SizeName), "Id", "SizeName").Append(new SelectListItem("Усі", null, true)),
+                        htmlAttributes: new { @class = "form-control" })
+            <label class="control-label" style="margin:10px">Колір: </label>
+            @Html.DropDownList("color", new SelectList(Model.Colors.OrderBy(s => s.ColorName), "Id", "ColorName").Append(new SelectListItem("Усі", null, true)),
+                        htmlAttributes: new { @class = "form-control" })
+            <label class="control-label" style="margin:10px">Модель: </label>
+            @Html.DropDownList("model", new SelectList(Model.BicycleModels.OrderBy(s => s.ModelName), "Id", "ModelName", null).Append(new SelectListItem("Усі", null, true)),
+                        htmlAttributes: new { @class = "form-control" })
+            <input type="submit"  style="margin:10px" value="Фільтр" class="btn btn-outline-primary" />
+            <a asp-action="Index"  style="margin:10px">Скинути</a>
+        </div>
+    </form>
+</div>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                @Html.DisplayNameFor(model => model.Bicycles.FirstOrDefault().Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.SizeColorModel)
+                @Html.DisplayNameFor(model => model.Bicycles.FirstOrDefault().SizeColorModel)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SizeColorModel.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Bicycles)
+        {
+            <tr>
+                <td>
+                    @if (item.Description != null)
+                        if (item.Description.Length >= 50)
+                            @(item.Description.ToString().Substring(0, 50)+"...")
+                            else
+                                @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-controller="SizeColorModels" asp-route-id="@item.SizeColorModelId">Деталі</a>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

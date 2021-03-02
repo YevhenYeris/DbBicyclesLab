@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Змінити</h1>
 
 <h4>Bicycle</h4>
 <hr />
@@ -18,7 +18,7 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="visibility:hidden;">
                 <label asp-for="SizeColorModelId" class="control-label"></label>
                 <select asp-for="SizeColorModelId" class="form-control" asp-items="ViewBag.SizeColorModelId"></select>
                 <span asp-validation-for="SizeColorModelId" class="text-danger"></span>
@@ -31,7 +31,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Назад до списку</a>
 </div>
 
 @section Scripts {

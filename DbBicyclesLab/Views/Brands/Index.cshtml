@@ -24,6 +24,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Dealer)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -34,7 +37,8 @@
                 @Html.DisplayFor(modelItem => item.BrandName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Description)
+                @if (item.Description != null)
+                    @(item.Description.ToString().Substring(0, 50)+"...")
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Country.CountryName)
@@ -43,9 +47,16 @@
                 @Html.DisplayFor(modelItem => item.Dealer.DealerName)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @if (item.Image != null)
+                {
+                    <img style='width:80px; height:60px;' src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Image))" />
+                }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                <a asp-action="GoToModels" asp-route-id="@item.Id">Моделі</a>
             </td>
         </tr>
 }

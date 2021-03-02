@@ -1,0 +1,102 @@
+﻿@model DbBicyclesLab.Models.BicycleModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>@Html.DisplayFor(model => model.Brand.BrandName) @Html.DisplayFor(model => model.ModelName) @Html.DisplayFor(model => model.ModelYear)</h1>
+            <div>
+                <a asp-action="CommonIndex">Назад</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div style="position:relative; display:inline-flex;">
+            <div class="col-6">
+                @if (Model.Image != null)
+                {
+                    <img style='width:100%; height:auto; margin:10px; background-color:white;' src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Image))" />
+                }
+            </div>
+            <div class="col-6">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Дані</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Brand)
+                            </td>
+                            <td>
+                                <a asp-action="CommonDetails" asp-route-id=@Model.Brand.Id>
+                                    @Html.DisplayFor(model => model.Brand.BrandName)
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.ModelName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.ModelName)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Brand.Country)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.Brand.Country.Id)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Category)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.Category.CategoryName)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Gender)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.Gender.GenderName)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.ModelYear)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.ModelYear)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Price)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.Price) грн.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <h2>@Html.DisplayNameFor(model => model.Description)</h2>
+
+            @Html.DisplayFor(model => model.Description)
+        </div>
+    </div>
+</div>

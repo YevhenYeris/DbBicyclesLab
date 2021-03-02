@@ -36,7 +36,8 @@ namespace DbBicyclesLab.Models
         [Display(Name = "Опис")]
         [StringLength(2500, ErrorMessage = ErrorMessages.StringLength)]
         public string Description { get; set; }
-
+        [Display(Name ="Зображення")]
+        public virtual byte[] Image { get; set; }
         [Display(Name = "Бренд")]
         public virtual Brand Brand { get; set; }
         [Display(Name = "Категорія")]

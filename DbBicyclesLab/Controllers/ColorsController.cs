@@ -148,5 +148,14 @@ namespace DbBicyclesLab.Controllers
         {
             return _context.Colors.Any(e => e.Id == id);
         }
+
+        public async Task<IActionResult> GoToBicycles(int? id)
+        {
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "Bicycles", new { color = id });
+            return await Task.Run<IActionResult>(() =>
+            {
+                return redirectToActionResult;
+            });
+        }
     }
 }

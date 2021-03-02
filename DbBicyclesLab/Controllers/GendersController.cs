@@ -148,5 +148,14 @@ namespace DbBicyclesLab.Controllers
         {
             return _context.Genders.Any(e => e.Id == id);
         }
+
+        public async Task<IActionResult> GoToModels(int? id)
+        {
+            RedirectToActionResult redirectToActionResult = RedirectToAction("Index", "BicycleModels", new { gender = id });
+            return await Task.Run<IActionResult>(() =>
+            {
+                return redirectToActionResult;
+            });
+        }
     }
 }
