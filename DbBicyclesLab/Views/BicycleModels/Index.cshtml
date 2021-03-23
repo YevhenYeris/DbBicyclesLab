@@ -30,10 +30,12 @@
             </div>
             <div class="form-inline">
                 <label class="control-label" style="margin:10px">Вартість: </label>
-                @Html.TextBox("minPrice", Model.BicycleModels.Min(m => m.Price), htmlAttributes: new { @class = "form-control", @type = "number", @style = "width:90px" }) - 
+                @Html.TextBox("minPrice", Model.BicycleModels.Min(m => m.Price), htmlAttributes: new { @class = "form-control", @type = "number", @style = "width:90px" }) -
                 @Html.TextBox("maxPrice", Model.BicycleModels.Max(m => m.Price), htmlAttributes: new { @class = "form-control", @type = "number", @style = "width:90px" })
                 <input type="submit" style="margin:10px" value="Фільтр" class="btn btn-outline-primary" />
-                <a asp-action="Index" style="margin:10px">Скинути</a>
+                <a asp-action="Index" style="margin:10px" class="btn btn-outline-primary">Скинути</a>
+                <input type="submit" asp-action="Export" value="Завантажити xlsx" class="btn btn-outline-primary"/>
+                <input type="submit" asp-action="ExportDocx" value="Завантажити docx" class="btn btn-outline-primary"/>
             </div>
 
         </form>

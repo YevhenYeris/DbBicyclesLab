@@ -7,6 +7,21 @@
 <h1>Велосипеди</h1>
 
 <div>
+    <h3>Оберіть exel-файл для заватаження</h3>
+    @using (Html.BeginForm("Import", "Bicycles", FormMethod.Post,
+new { enctype = "multipart/form-data", id = "frm-excel" }))
+    {
+        <div>
+            Завантажте Excel-файл:
+            <input type="file" name="fileExcel" id="fileExcel"/>
+            <div>
+                <input type="submit" value="Завантажити"/>
+            </div>
+        </div>
+    }
+</div>
+
+<div>
     <form method="get">
         <div class="form-inline">
             <label class="control-label" style="margin:10px">Розмір: </label>

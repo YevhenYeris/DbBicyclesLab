@@ -39,7 +39,8 @@ namespace DbBicyclesLab.Controllers
                 return NotFound();
             }
 
-            return View(country);
+            //return View(country);
+            return RedirectToAction("Index", "Brands", new { id = country.Id, name = country.CountryName});
         }
 
         // GET: Countries/Create

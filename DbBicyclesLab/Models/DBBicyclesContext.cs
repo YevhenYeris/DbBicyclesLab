@@ -28,7 +28,6 @@ namespace DbBicyclesLab.Models
         public virtual DbSet<Gender> Genders { get; set; }
         public virtual DbSet<Size> Sizes { get; set; }
         public virtual DbSet<SizeColorModel> SizeColorModels { get; set; }
-        public virtual DbSet<ImageModel> ImageModels { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

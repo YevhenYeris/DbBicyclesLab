@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DbBicyclesLab.Models;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http;
 
 namespace DbBicyclesLab.Controllers
 {
@@ -180,6 +183,89 @@ namespace DbBicyclesLab.Controllers
         private bool BicycleExists(int id)
         {
             return _context.Bicycles.Any(e => e.Id == id);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Import(IFormFile fileExcel)
+        {
+            if (ModelState.IsValid)
+            {
+                if (fileExcel != null)
+                {
+                    using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
+                    {
+                        await fileExcel.CopyToAsync(stream);
+
+                        using (XLWorkbook workBook = new XLWorkbook(stream, XLEventTracking.Disabled))
+                        {
+                            try
+                            {
+                                foreach (IXLWorksheet worksheet in workBook.Worksheets)
+                                {
+                                    BicycleModel newmodel;
+                                    var m = (from model in _context.BicycleModels
+                                             where model.ModelName.Contains(worksheet.Name)
+                                             select model).ToList();
+                                    if (m.Any())
+                                    {
+                                        newmodel = m[0];
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Model does not exist");
+                                        /*newmodel = new BicycleModel();
+                                        newmodel.ModelName = worksheet.Name;
+                                        newmodel.Description = "from EXCEL";
+                                        //додати в контекст
+                                        _context.BicycleModels.Add(newmodel);*/
+                                    }
+                                    foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                                    {
+
+                                        Size size = new Size();
+                                        size.SizeName = row.Cell(1).Value.ToString();
+                                        var s = (from sz in _context.Sizes
+                                                 where sz.SizeName.Contains(size.SizeName)
+                                                 select sz).ToList();
+
+                                        if (!s.Any())
+                                            _context.Sizes.Add(size);
+                                        else
+                                            size = s[0];
+
+                                        Color color = new Color();
+                                        color.ColorName = row.Cell(2).Value.ToString();
+                                        var c = (from cr in _context.Colors
+                                                 where cr.ColorName.Equals(color.ColorName)
+                                                 select cr).ToList();
+
+                                        if (!c.Any())
+                                            _context.Colors.Add(color);
+                                        else
+                                            color = c[0];
+
+                                        SizeColorModel sizeColorModel = new SizeColorModel() { Size = size, Color = color, Model = newmodel };
+                                        _context.SizeColorModels.Add(sizeColorModel);
+
+                                        Bicycle bicycle = new Bicycle { SizeColorModel = sizeColorModel, Description = row.Cell(3).Value.ToString() };
+                                        _context.Bicycles.Add(bicycle);
+
+                                        await _context.SaveChangesAsync();
+                                    }
+
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await Response.WriteAsync("<script>alert('"+ e.Message + "');</script>");
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

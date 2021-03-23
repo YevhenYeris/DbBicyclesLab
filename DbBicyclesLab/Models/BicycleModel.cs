@@ -15,6 +15,7 @@ namespace DbBicyclesLab.Models
 
         public int Id { get; set; }
         [Display(Name = "Вартість")]
+        [Range(0, int.MaxValue, ErrorMessage = ErrorMessages.Range)]
         public int? Price { get; set; }
         [Display(Name = "Назва моделі")]
         [Required(ErrorMessage = ErrorMessages.Required)]
@@ -22,7 +23,7 @@ namespace DbBicyclesLab.Models
         public string ModelName { get; set; }
         [Display(Name = "Рік випуску")]
         [Required(ErrorMessage = ErrorMessages.Required)]
-        [Range(0, 9999, ErrorMessage = ErrorMessages.Range)]
+        [Range(1850, 9999, ErrorMessage = ErrorMessages.Range)]
         public int ModelYear { get; set; }
         [Display(Name = "Бренд")]
         [Required(ErrorMessage = ErrorMessages.Required)]

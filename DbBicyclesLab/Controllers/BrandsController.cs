@@ -21,7 +21,7 @@ namespace DbBicyclesLab.Controllers
         }
 
         // GET: Brands
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? id, string name)
         {
             var dBBicyclesContext = _context.Brands.Include(b => b.Country).Include(b => b.Dealer);
             return View(await dBBicyclesContext.ToListAsync());

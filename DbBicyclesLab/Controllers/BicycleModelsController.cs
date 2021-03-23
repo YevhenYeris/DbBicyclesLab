@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,11 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 
 using System.ComponentModel.DataAnnotations;
+using ClosedXML.Excel;
+using Xceed.Words.NET;
+using Xceed.Document.NET;
+using Xceed.Words;
+using Xceed.Document;
 
 namespace DbBicyclesLab.Controllers
 {
@@ -23,33 +29,43 @@ namespace DbBicyclesLab.Controllers
             _context = context;
         }
 
-        // GET: BicycleModels
-        public async Task<IActionResult> Index(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
+        private IEnumerable<BicycleModel> ApplyFilters(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
         {
-            /*var dBBicyclesContext = _context.BicycleModels.Include(b => b.Brand).Include(b => b.Category).Include(b => b.Gender);
-            if (id != null)
-                return View(await dBBicyclesContext.Where(m => m.CategoryId == id).ToListAsync());
-            else
-                return View(await dBBicyclesContext.ToListAsync());*/
-            BicycleModelsListModelView listModelView = new BicycleModelsListModelView(_context);
+            IEnumerable<BicycleModel> bicycleModels =  from m in _context.BicycleModels
+                                                       .Include(x => x.SizeColorModels)
+                                                       .Include($"{ nameof(DBBicyclesContext.SizeColorModels)}.{nameof(SizeColorModel.Size)}")
+                                                       .Include($"{ nameof(DBBicyclesContext.SizeColorModels)}.{nameof(SizeColorModel.Color)}")
+                                                       .Include($"{ nameof(DBBicyclesContext.SizeColorModels)}.{nameof(SizeColorModel.Bicycles)}")
+                                                       .Include(x => x.Brand)
+                                                       .Include(x => x.Category)
+                                                       .Include(x => x.Gender)
+                                                       select m;
             if (brand != null)
             {
-                listModelView.BicycleModels = listModelView.BicycleModels.Where(b => b.BrandId == brand);
+                bicycleModels = bicycleModels.Where(b => b.BrandId == brand);
             }
             if (category != null)
             {
-                listModelView.BicycleModels = listModelView.BicycleModels.Where(b => b.CategoryId == category);
+                bicycleModels = bicycleModels.Where(b => b.CategoryId == category);
             }
             if (gender != null)
             {
-                listModelView.BicycleModels = listModelView.BicycleModels.Where(b => b.GenderId == gender);
+                bicycleModels = bicycleModels.Where(b => b.GenderId == gender);
             }
             if (year != null && year != "Усі")
             {
-                listModelView.BicycleModels = listModelView.BicycleModels.Where(b => b.ModelYear == int.Parse(year));
+                bicycleModels = bicycleModels.Where(b => b.ModelYear == int.Parse(year));
             }
             if (maxPrice != null && minPrice != null)
-                listModelView.BicycleModels = listModelView.BicycleModels.Where(b => b.Price >= (minPrice) && b.Price <= (maxPrice));
+                bicycleModels = bicycleModels.Where(b => b.Price >= (minPrice) && b.Price <= (maxPrice));
+            return bicycleModels;
+        }
+
+        // GET: BicycleModels
+        public async Task<IActionResult> Index(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
+        {
+            BicycleModelsListModelView listModelView = new BicycleModelsListModelView(_context);
+            listModelView.BicycleModels = ApplyFilters(brand, category, gender, minPrice, maxPrice, year);
             return View(listModelView);
         }
 
@@ -169,7 +185,7 @@ namespace DbBicyclesLab.Controllers
             ViewData["GenderId"] = new SelectList(_context.Genders, "Id", "GenderName", bicycleModel.GenderId);
             return View(bicycleModel);
         }
-                  
+
         // GET: BicycleModels/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -292,6 +308,160 @@ namespace DbBicyclesLab.Controllers
             {
                 return redirectToActionResult;
             });
+        }
+
+        public ActionResult Export(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
+        {
+            using (XLWorkbook workbook = new XLWorkbook(XLEventTracking.Disabled))
+            {
+                //var categories = _context.BicycleModels.Include("SizeColorModels").ToList();
+                var models = ApplyFilters(brand, category, gender, minPrice, maxPrice, year);
+
+                foreach (var m in models)
+                {
+                    string name = m.ModelName.Length > 31 ? m.ModelName.Substring(0, 31) : m.ModelName;
+
+                    var worksheet = workbook.Worksheets.Add(name);
+                    worksheet.Cell("A1").Value = "Розмір";
+                    worksheet.Cell("B1").Value = "Колір";
+                    worksheet.Cell("C1").Value = "Опис";
+                    worksheet.Row(1).Style.Font.Bold = true;
+                    var sizeColorModels = m.SizeColorModels;
+
+                    for (int i = 0; i < sizeColorModels.Count; i++)
+                    {
+                        var scm = sizeColorModels.ElementAt(i);
+                        string szName = scm.Size.SizeName;
+                        string crName = scm.Color.ColorName;
+                        for (int j = 0; j < sizeColorModels.ElementAt(i).Bicycles.Count; ++j)
+                        {
+                            worksheet.Cell(i + 2, 1).Value = szName;
+                            worksheet.Cell(i + 2, 2).Value = crName;
+                            worksheet.Cell(i + 2, 3).Value = scm.Bicycles.ElementAt(j).Description;
+                        }
+                        
+                    }
+                }
+                using (var stream = new MemoryStream())
+                {
+                    if (!workbook.Worksheets.Any())
+                        workbook.Worksheets.Add();
+
+                    workbook.SaveAs(stream);
+                    stream.Flush();
+
+                    return new FileContentResult(stream.ToArray(),
+                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    {
+                        FileDownloadName =
+                       $"library_{DateTime.UtcNow.ToShortDateString()}.xlsx"
+                    };
+                }
+            }
+        }
+
+        public ActionResult ExportDocx(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
+        {
+            string fileName = @"D:\bdb.docx";
+            var doc = DocX.Create(fileName);
+
+            IEnumerable<Category> categories = category == null ? _context.Categories : new List<Category> { _context.Categories.Find(category) };
+
+            foreach (var cat in categories)
+            {
+                List<BicycleModel> models = ApplyFilters(brand, cat.Id, gender, minPrice, maxPrice, year).ToList();
+
+                if (models.Any())
+                {
+                    Paragraph paragraphTitle = doc.InsertParagraph(cat.CategoryName, false).FontSize(15D).Bold();
+                    doc.InsertParagraph("\n");
+                    paragraphTitle.Alignment = Alignment.center;
+                    
+                    Table t = doc.AddTable(models.Count + 1, 6);
+                    t.Alignment = Alignment.center;
+                    t.Design = TableDesign.ColorfulList;
+                    
+                    /*Table t = doc.AddTable(6, 2);
+                    t.Alignment = Alignment.left;
+                    t.Design = TableDesign.ColorfulList;
+
+                    string imagePath = @"wwwroot\Images\orbea_logo.png";
+                    string descr = "";*/
+
+                    /*t.Rows[0].Cells[0].Paragraphs.First().Append("Бренд");
+                    t.Rows[1].Cells[0].Paragraphs.First().Append("Модель");
+                    t.Rows[2].Cells[0].Paragraphs.First().Append("Рік");
+                    t.Rows[3].Cells[0].Paragraphs.First().Append("Вартість, грн");
+                    t.Rows[4].Cells[0].Paragraphs.First().Append("Для кого");
+                    t.Rows[5].Cells[0].Paragraphs.First().Append("Країна");*/
+                    t.Rows[0].Cells[0].Paragraphs.First().Append("Бренд");
+                    t.Rows[0].Cells[1].Paragraphs.First().Append("Модель");
+                    t.Rows[0].Cells[2].Paragraphs.First().Append("Рік");
+                    t.Rows[0].Cells[3].Paragraphs.First().Append("Вартість, грн");
+                    t.Rows[0].Cells[4].Paragraphs.First().Append("Для кого");
+                    t.Rows[0].Cells[5].Paragraphs.First().Append("Країна");
+
+                    int i = 1;
+                    foreach (var m in models)
+                    {
+                        /*Paragraph paragraphTitle = doc.InsertParagraph(m.ModelName, false).FontSize(15D).Bold();
+                        paragraphTitle.Alignment = Alignment.center;
+
+                        char[] chars = { ' ', '-' };
+                        string imgFileName = m.ModelName.Replace("-", string.Empty);
+                        imgFileName = imgFileName.Replace(" ", string.Empty);
+                        imagePath = @"wwwroot\Images\" + imgFileName + ".jpg";*/
+
+                        t.Rows[i].Cells[0].Paragraphs.First().Append(m.Brand.BrandName);
+                        t.Rows[i].Cells[1].Paragraphs.First().Append(m.ModelName);
+                        t.Rows[i].Cells[2].Paragraphs.First().Append(m.ModelYear.ToString());
+                        t.Rows[i].Cells[3].Paragraphs.First().Append(m.Price.ToString());
+                        t.Rows[i].Cells[4].Paragraphs.First().Append(m.Gender.GenderName);
+                        t.Rows[i].Cells[5].Paragraphs.First().Append(_context.Countries.Find(m.Brand.CountryId).CountryName);
+
+                        /*t.Rows[0].Cells[1].Paragraphs.First().Append(m.Brand.BrandName);
+                        t.Rows[1].Cells[1].Paragraphs.First().Append(m.ModelName);
+                        t.Rows[2].Cells[1].Paragraphs.First().Append(m.ModelYear.ToString());
+                        t.Rows[3].Cells[1].Paragraphs.First().Append(m.Price.ToString());
+                        t.Rows[4].Cells[1].Paragraphs.First().Append(m.Gender.GenderName);
+                        t.Rows[5].Cells[1].Paragraphs.First().Append(_context.Countries.Find(m.Brand.CountryId).CountryName);
+
+                         descr = m.Description != null ? m.Description : "";
+
+                        using (var ms = new MemoryStream(m.Image))
+                        {
+                            using (var fs = new FileStream(imagePath, FileMode.Create))
+                            {
+                                ms.WriteTo(fs);
+                            }
+                        }*/
+                        ++i;
+                    }
+
+                    doc.InsertTable(t);
+                    /*Image img = doc.AddImage(imagePath);
+                    var pic = img.CreatePicture();
+                    pic.HeightInches = 2;
+                    pic.WidthInches = 3;
+                    doc.InsertParagraph().InsertPicture(pic).Alignment = Alignment.right;
+                    doc.InsertTable(t);
+                    if (descr.Any())
+                        doc.InsertParagraph(descr);*/
+                    doc.InsertParagraph("\n");
+                }
+            }
+            //doc.Save();
+            using (var stream = new MemoryStream())
+            {
+                doc.SaveAs(stream);
+                stream.Flush();
+                return new FileContentResult(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                {
+                    FileDownloadName =
+                $"library_{DateTime.UtcNow.ToShortDateString()}.docx"
+                };
+            }
         }
     }
 }
