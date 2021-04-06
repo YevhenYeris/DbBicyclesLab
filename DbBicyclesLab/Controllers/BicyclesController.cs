@@ -10,6 +10,11 @@ using DbBicyclesLab.Models;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
 
+using Xceed.Words.NET;
+using Xceed.Document.NET;
+using Xceed.Words;
+using Xceed.Document;
+
 namespace DbBicyclesLab.Controllers
 {
     public class BicyclesController : Controller
@@ -189,83 +194,178 @@ namespace DbBicyclesLab.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(IFormFile fileExcel)
         {
-            if (ModelState.IsValid)
+            try
             {
-                if (fileExcel != null)
+                if (!ModelState.IsValid || fileExcel == null)
+                    throw new Exception();
+
+                using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
                 {
-                    using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
+                    await fileExcel.CopyToAsync(stream);
+
+                    using (XLWorkbook workBook = new XLWorkbook(stream, XLEventTracking.Disabled))
                     {
-                        await fileExcel.CopyToAsync(stream);
-
-                        using (XLWorkbook workBook = new XLWorkbook(stream, XLEventTracking.Disabled))
+                        foreach (IXLWorksheet worksheet in workBook.Worksheets)
                         {
-                            try
-                            {
-                                foreach (IXLWorksheet worksheet in workBook.Worksheets)
-                                {
-                                    BicycleModel newmodel;
-                                    var m = (from model in _context.BicycleModels
-                                             where model.ModelName.Contains(worksheet.Name)
-                                             select model).ToList();
-                                    if (m.Any())
-                                    {
-                                        newmodel = m[0];
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("Model does not exist");
-                                        /*newmodel = new BicycleModel();
-                                        newmodel.ModelName = worksheet.Name;
-                                        newmodel.Description = "from EXCEL";
-                                        //додати в контекст
-                                        _context.BicycleModels.Add(newmodel);*/
-                                    }
-                                    foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
-                                    {
-
-                                        Size size = new Size();
-                                        size.SizeName = row.Cell(1).Value.ToString();
-                                        var s = (from sz in _context.Sizes
-                                                 where sz.SizeName.Contains(size.SizeName)
-                                                 select sz).ToList();
-
-                                        if (!s.Any())
-                                            _context.Sizes.Add(size);
-                                        else
-                                            size = s[0];
-
-                                        Color color = new Color();
-                                        color.ColorName = row.Cell(2).Value.ToString();
-                                        var c = (from cr in _context.Colors
-                                                 where cr.ColorName.Equals(color.ColorName)
-                                                 select cr).ToList();
-
-                                        if (!c.Any())
-                                            _context.Colors.Add(color);
-                                        else
-                                            color = c[0];
-
-                                        SizeColorModel sizeColorModel = new SizeColorModel() { Size = size, Color = color, Model = newmodel };
-                                        _context.SizeColorModels.Add(sizeColorModel);
-
-                                        Bicycle bicycle = new Bicycle { SizeColorModel = sizeColorModel, Description = row.Cell(3).Value.ToString() };
-                                        _context.Bicycles.Add(bicycle);
-
-                                        await _context.SaveChangesAsync();
-                                    }
-
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                await Response.WriteAsync("<script>alert('"+ e.Message + "');</script>");
-                            }
+                            ImportBicycles(worksheet);
+                            await _context.SaveChangesAsync();
                         }
-                        
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await Response.WriteAsync("<script>alert('" + e.Message + "');</script>");
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private void ImportBicycles(IXLWorksheet worksheet)
+        {
+            BicycleModel newmodel;
+            var m = (from model in _context.BicycleModels
+                     where model.ModelName.Contains(worksheet.Name)
+                     select model).ToList();
+
+            if (m.Any())
+                newmodel = m[0];
+            else
+                throw new Exception("Model does not exist");
+
+            foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+            {
+                //Створимо модель
+                SizeColorModel sizeColorModel = new SizeColorModel();
+                sizeColorModel.Model = newmodel;
+
+                //Шукаємо розмір в базі
+                Size size = new Size();
+                size.SizeName = row.Cell(1).Value.ToString();
+                var s = (from sz in _context.Sizes
+                         where sz.SizeName.Contains(size.SizeName)
+                         select sz).ToList();
+
+                if (!s.Any())
+                    _context.Sizes.Add(size);
+                else
+                    size = s.First();
+                sizeColorModel.Size = size;
+
+                //Шукаємо колір в базі
+                Color color = new Color();
+                color.ColorName = row.Cell(2).Value.ToString();
+                var c = (from cr in _context.Colors
+                         where cr.ColorName.Equals(color.ColorName)
+                         select cr).ToList();
+
+                if (!c.Any())
+                    _context.Colors.Add(color);
+                else
+                    color = c.First();
+                sizeColorModel.Color = color;
+
+                //Шукаємо колір-розмір-модель в базі
+                var scm = (from o in _context.SizeColorModels
+                           where o.Size.SizeName == size.SizeName
+                           && o.Color.ColorName == color.ColorName
+                           && o.Model.ModelName == newmodel.ModelName
+                           select o).ToList();
+                if (!scm.Any())
+                    _context.SizeColorModels.Add(sizeColorModel);
+                else
+                    sizeColorModel = scm.First();
+
+                Bicycle bicycle = new Bicycle { SizeColorModel = sizeColorModel, Description = row.Cell(3).Value.ToString() };
+
+                //Шукаємо велосипед в базі
+                var bcs = (from b in _context.Bicycles
+                           where b.SizeColorModel == bicycle.SizeColorModel
+                           && b.Description == bicycle.Description
+                           select b).ToList();
+
+                if (!bcs.Any())
+                    _context.Bicycles.Add(bicycle);
+                else
+                {
+                    var tbcc = bcs.First();
+                    tbcc.Quantity = tbcc.Quantity == null ? 1 : tbcc.Quantity + 1;
+                    _context.Bicycles.Update(tbcc);
+                }
+            }
+        }
+
+        /*public async Task<IActionResult> ImportDocX(IFormFile fileDocX)
+        {
+            if (!ModelState.IsValid || fileDocX == null)
+                return RedirectToAction(nameof(Index));
+
+            using (var stream = new FileStream(fileDocX.FileName, FileMode.Create))
+            {
+                await fileDocX.CopyToAsync(stream);
+
+                DocX doc = DocX.Load(stream);
+
+                foreach (var p in doc.Paragraphs)
+                {
+                    string catName = p.Text.Trim();
+
+                    var cats = from c in _context.Categories where c.CategoryName == catName select c;
+                    Category cat = new Category();
+
+                    if (!cats.Any() && cats.Any())
+                    {
+                        cat.CategoryName = cats.First().CategoryName;
+                        _context.Categories.Add(cat);
+                    }
+
+                    if (p.FollowingTables != null && p.FollowingTables.Any())
+                    {
+                        Table table = p.FollowingTables.First();
+
+                        BicycleModel model = new BicycleModel();
+
+                        foreach (var r in table.Rows.Skip(1))
+                        {
+                            string bname = r.Cells[0].ToString();
+                            var brands = from b in _context.Brands where b.BrandName == bname select b;
+                            Brand brand = new Brand();
+                            if (brands.Any())
+                            {
+                                model.BrandId = brands.First().Id;
+                            }
+
+                            string mname = r.Cells[1].Paragraphs.First().Text;
+                            model.ModelName = mname;
+
+                            string yname = r.Cells[2].Paragraphs.First().Text;
+                            model.ModelYear = int.Parse(yname);
+
+                            string pname = r.Cells[3].Paragraphs.First().Text;
+                            model.Price = int.Parse(pname);
+
+                            string gname = r.Cells[4].Paragraphs.First().Text;
+                            var genders = from g in _context.Genders where g.GenderName == gname select g;
+                            Gender gender = new Gender();
+                            if (genders.Any())
+                            {
+                                model.GenderId = genders.First().Id;
+                            }
+
+                            string cname = r.Cells[5].Paragraphs.First().Text;
+                            var countries = from c in _context.Countries where c.CountryName == cname select c;
+                            Country country = new Country();
+                            if (countries.Any())
+                            {
+                                //model.Brand.CountryId = cous.First().Id;
+                            }
+                            _context.BicycleModels.Add(model);
+
+                            await _context.SaveChangesAsync();
+                        }
                     }
                 }
             }
             return RedirectToAction(nameof(Index));
-        }
+        }*/
     }
 }

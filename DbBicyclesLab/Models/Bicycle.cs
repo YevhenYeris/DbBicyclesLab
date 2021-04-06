@@ -17,6 +17,9 @@ namespace DbBicyclesLab.Models
         [Required(ErrorMessage = ErrorMessages.Required)]
         public int? SizeColorModelId { get; set; }
 
+        [Display(Name = "Кількість")]
+        public int? Quantity { get; set; }
+
         [Display(Name = "Розмір-Колір-Модель")]
         public virtual SizeColorModel SizeColorModel { get; set; }
     }

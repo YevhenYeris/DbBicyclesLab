@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
@@ -314,7 +315,6 @@ namespace DbBicyclesLab.Controllers
         {
             using (XLWorkbook workbook = new XLWorkbook(XLEventTracking.Disabled))
             {
-                //var categories = _context.BicycleModels.Include("SizeColorModels").ToList();
                 var models = ApplyFilters(brand, category, gender, minPrice, maxPrice, year);
 
                 foreach (var m in models)
@@ -342,28 +342,33 @@ namespace DbBicyclesLab.Controllers
                         
                     }
                 }
-                using (var stream = new MemoryStream())
+                return SaveDocXlsx(workbook);
+            }
+        }
+
+        private ActionResult SaveDocXlsx(XLWorkbook workbook)
+        {
+            using (var stream = new MemoryStream())
+            {
+                if (!workbook.Worksheets.Any())
+                    workbook.Worksheets.Add();
+
+                workbook.SaveAs(stream);
+                stream.Flush();
+
+                return new FileContentResult(stream.ToArray(),
+                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 {
-                    if (!workbook.Worksheets.Any())
-                        workbook.Worksheets.Add();
-
-                    workbook.SaveAs(stream);
-                    stream.Flush();
-
-                    return new FileContentResult(stream.ToArray(),
-                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    {
-                        FileDownloadName =
-                       $"library_{DateTime.UtcNow.ToShortDateString()}.xlsx"
-                    };
-                }
+                    FileDownloadName =
+                   $"library_{DateTime.UtcNow.ToShortDateString()}.xlsx"
+                };
             }
         }
 
         public ActionResult ExportDocx(int? brand, int? category, int? gender, int? minPrice, int? maxPrice, string year)
         {
-            string fileName = @"D:\bdb.docx";
-            var doc = DocX.Create(fileName);
+            //string fileName = @"bdb.docx";
+            var doc = DocX.Create("");
 
             IEnumerable<Category> categories = category == null ? _context.Categories : new List<Category> { _context.Categories.Find(category) };
 
@@ -376,81 +381,37 @@ namespace DbBicyclesLab.Controllers
                     Paragraph paragraphTitle = doc.InsertParagraph(cat.CategoryName, false).FontSize(15D).Bold();
                     doc.InsertParagraph("\n");
                     paragraphTitle.Alignment = Alignment.center;
-                    
+
+                    List<string> attributes = new List<string> { "Бренд", "Модель", "Рік", "Вартість, грн", "Для кого", "Країна" };
                     Table t = doc.AddTable(models.Count + 1, 6);
                     t.Alignment = Alignment.center;
                     t.Design = TableDesign.ColorfulList;
-                    
-                    /*Table t = doc.AddTable(6, 2);
-                    t.Alignment = Alignment.left;
-                    t.Design = TableDesign.ColorfulList;
 
-                    string imagePath = @"wwwroot\Images\orbea_logo.png";
-                    string descr = "";*/
+                    for (int i = 0; i < attributes.Count(); ++i)
+                        t.Rows[0].Cells[i].Paragraphs.First().Append(attributes[i]);
 
-                    /*t.Rows[0].Cells[0].Paragraphs.First().Append("Бренд");
-                    t.Rows[1].Cells[0].Paragraphs.First().Append("Модель");
-                    t.Rows[2].Cells[0].Paragraphs.First().Append("Рік");
-                    t.Rows[3].Cells[0].Paragraphs.First().Append("Вартість, грн");
-                    t.Rows[4].Cells[0].Paragraphs.First().Append("Для кого");
-                    t.Rows[5].Cells[0].Paragraphs.First().Append("Країна");*/
-                    t.Rows[0].Cells[0].Paragraphs.First().Append("Бренд");
-                    t.Rows[0].Cells[1].Paragraphs.First().Append("Модель");
-                    t.Rows[0].Cells[2].Paragraphs.First().Append("Рік");
-                    t.Rows[0].Cells[3].Paragraphs.First().Append("Вартість, грн");
-                    t.Rows[0].Cells[4].Paragraphs.First().Append("Для кого");
-                    t.Rows[0].Cells[5].Paragraphs.First().Append("Країна");
-
-                    int i = 1;
+                    int j = 1;
                     foreach (var m in models)
                     {
-                        /*Paragraph paragraphTitle = doc.InsertParagraph(m.ModelName, false).FontSize(15D).Bold();
-                        paragraphTitle.Alignment = Alignment.center;
+                        t.Rows[j].Cells[0].Paragraphs.First().Append(m.Brand.BrandName);
+                        t.Rows[j].Cells[1].Paragraphs.First().Append(m.ModelName);
+                        t.Rows[j].Cells[2].Paragraphs.First().Append(m.ModelYear.ToString());
+                        t.Rows[j].Cells[3].Paragraphs.First().Append(m.Price.ToString());
+                        t.Rows[j].Cells[4].Paragraphs.First().Append(m.Gender.GenderName);
+                        t.Rows[j].Cells[5].Paragraphs.First().Append(_context.Countries.Find(m.Brand.CountryId).CountryName);
 
-                        char[] chars = { ' ', '-' };
-                        string imgFileName = m.ModelName.Replace("-", string.Empty);
-                        imgFileName = imgFileName.Replace(" ", string.Empty);
-                        imagePath = @"wwwroot\Images\" + imgFileName + ".jpg";*/
-
-                        t.Rows[i].Cells[0].Paragraphs.First().Append(m.Brand.BrandName);
-                        t.Rows[i].Cells[1].Paragraphs.First().Append(m.ModelName);
-                        t.Rows[i].Cells[2].Paragraphs.First().Append(m.ModelYear.ToString());
-                        t.Rows[i].Cells[3].Paragraphs.First().Append(m.Price.ToString());
-                        t.Rows[i].Cells[4].Paragraphs.First().Append(m.Gender.GenderName);
-                        t.Rows[i].Cells[5].Paragraphs.First().Append(_context.Countries.Find(m.Brand.CountryId).CountryName);
-
-                        /*t.Rows[0].Cells[1].Paragraphs.First().Append(m.Brand.BrandName);
-                        t.Rows[1].Cells[1].Paragraphs.First().Append(m.ModelName);
-                        t.Rows[2].Cells[1].Paragraphs.First().Append(m.ModelYear.ToString());
-                        t.Rows[3].Cells[1].Paragraphs.First().Append(m.Price.ToString());
-                        t.Rows[4].Cells[1].Paragraphs.First().Append(m.Gender.GenderName);
-                        t.Rows[5].Cells[1].Paragraphs.First().Append(_context.Countries.Find(m.Brand.CountryId).CountryName);
-
-                         descr = m.Description != null ? m.Description : "";
-
-                        using (var ms = new MemoryStream(m.Image))
-                        {
-                            using (var fs = new FileStream(imagePath, FileMode.Create))
-                            {
-                                ms.WriteTo(fs);
-                            }
-                        }*/
-                        ++i;
+                        ++j;
                     }
 
                     doc.InsertTable(t);
-                    /*Image img = doc.AddImage(imagePath);
-                    var pic = img.CreatePicture();
-                    pic.HeightInches = 2;
-                    pic.WidthInches = 3;
-                    doc.InsertParagraph().InsertPicture(pic).Alignment = Alignment.right;
-                    doc.InsertTable(t);
-                    if (descr.Any())
-                        doc.InsertParagraph(descr);*/
                     doc.InsertParagraph("\n");
                 }
             }
-            //doc.Save();
+            return SaveDocDocx(doc);
+        }
+
+        private ActionResult SaveDocDocx(DocX doc)
+        {
             using (var stream = new MemoryStream())
             {
                 doc.SaveAs(stream);

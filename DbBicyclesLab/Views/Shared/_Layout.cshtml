@@ -9,18 +9,18 @@
 </head>
 <body>
     <header>
-        <a class="navbar-brand nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Велоринок України</a>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Bicycles" asp-action="Index">Велосипеди</a>
-                        </li>
+                <div class="navbar-collapse collapse">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        <img src="favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
+                        VeloLab
+                    </a>
+                    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="BicycleModels" asp-action="Index">Моделі</a>
                         </li>
@@ -33,22 +33,39 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="AuthorizedDealers" asp-action="Index">Представники</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Colors" asp-action="Index">Кольори</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Sizes" asp-action="Index">Розміри</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Countries" asp-action="Index">Країни</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Genders" asp-action="Index">Для кого</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="SizeColorModels" asp-action="Index">Розмір-Колір-Модель</a>
-                        </li>
+                        @if (User.IsInRole("admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Dropdown link
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Bicycles" asp-action="Index">Велосипеди</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Colors" asp-action="Index">Кольори</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Sizes" asp-action="Index">Розміри</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Countries" asp-action="Index">Країни</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Genders" asp-action="Index">Для кого</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="SizeColorModels" asp-action="Index">Розмір-Колір-Модель</a>
+
+                                </div>
+                            </li>
+                        }
                     </ul>
+                    <div class="my-2 my-lg-0">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <p>@User.Identity.Name</p>
+
+                            <form method="post" asp-controller="Account" asp-action="Logout">
+                                <input type="submit" value="Вихід" />
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login">Вхід</a>
+                            <a asp-controller="Account" asp-action="Register">Реєстація</a>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>

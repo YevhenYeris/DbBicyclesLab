@@ -47,29 +47,36 @@ new { enctype = "multipart/form-data", id = "frm-excel" }))
             <th>
                 @Html.DisplayNameFor(model => model.Bicycles.FirstOrDefault().SizeColorModel)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Bicycles.FirstOrDefault().Quantity)
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Bicycles)
         {
-            <tr>
-                <td>
-                    @if (item.Description != null)
-                        if (item.Description.Length >= 50)
-                            @(item.Description.ToString().Substring(0, 50)+"...")
-                            else
-                                @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    <a asp-action="Details" asp-controller="SizeColorModels" asp-route-id="@item.SizeColorModelId">Деталі</a>
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @if (item.Description != null)
+                    if (item.Description.Length >= 50)
+                        @(item.Description.ToString().Substring(0, 50)+"...")
+                        else
+                            @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                <a asp-action="Details" asp-controller="SizeColorModels" asp-route-id="@item.SizeColorModelId">Деталі</a>
+            </td>
+            <td>
+                @if (item.Quantity != null)
+                    @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>
