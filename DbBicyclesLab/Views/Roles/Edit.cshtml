@@ -6,11 +6,14 @@
 <form asp-action="Edit" method="post">
     <input type="hidden" name="userId" value="@Model.UserId" />
     <div class="form-group">
-        @foreach (IdentityRole role in Model.AllRoles)
+        @if (!Model.UserRoles.Contains("admin"))
+            {
+            <span>admin</span>
+            <input type="checkbox" name="roles" value="admin"/><br />
+            }else
         {
-            <input type="checkbox" name="roles" value="@role.Name"
-                   @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "") />@role.Name <br />
-            }
+            <div>Цей користувач є адміністратором!</div>
+        }
     </div>
     <button type="submit" class="btn btn-primary">Зберегти</button>
 </form>

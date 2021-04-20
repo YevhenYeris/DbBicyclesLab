@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using DbBicyclesLab.Models;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 using Xceed.Words.NET;
 using Xceed.Document.NET;
@@ -17,6 +19,7 @@ using Xceed.Document;
 
 namespace DbBicyclesLab.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class BicyclesController : Controller
     {
         private readonly DBBicyclesContext _context;
@@ -220,76 +223,67 @@ namespace DbBicyclesLab.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private void ImportBicycles(IXLWorksheet worksheet)
+        private async void ImportBicycles(IXLWorksheet worksheet)
         {
-            BicycleModel newmodel;
-            var m = (from model in _context.BicycleModels
-                     where model.ModelName.Contains(worksheet.Name)
-                     select model).ToList();
-
-            if (m.Any())
-                newmodel = m[0];
-            else
-                throw new Exception("Model does not exist");
-
             foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
             {
-                //Створимо модель
-                SizeColorModel sizeColorModel = new SizeColorModel();
-                sizeColorModel.Model = newmodel;
+                string name = worksheet.Name;
+                dynamic tempObj = _context.BicycleModels.Where(m => m.ModelName.Contains(name)).FirstOrDefault();
+                if (tempObj == null) throw new Exception("Model does not exist");
 
-                //Шукаємо розмір в базі
-                Size size = new Size();
-                size.SizeName = row.Cell(1).Value.ToString();
-                var s = (from sz in _context.Sizes
-                         where sz.SizeName.Contains(size.SizeName)
-                         select sz).ToList();
-
-                if (!s.Any())
-                    _context.Sizes.Add(size);
-                else
-                    size = s.First();
-                sizeColorModel.Size = size;
-
-                //Шукаємо колір в базі
-                Color color = new Color();
-                color.ColorName = row.Cell(2).Value.ToString();
-                var c = (from cr in _context.Colors
-                         where cr.ColorName.Equals(color.ColorName)
-                         select cr).ToList();
-
-                if (!c.Any())
-                    _context.Colors.Add(color);
-                else
-                    color = c.First();
-                sizeColorModel.Color = color;
-
-                //Шукаємо колір-розмір-модель в базі
-                var scm = (from o in _context.SizeColorModels
-                           where o.Size.SizeName == size.SizeName
-                           && o.Color.ColorName == color.ColorName
-                           && o.Model.ModelName == newmodel.ModelName
-                           select o).ToList();
-                if (!scm.Any())
-                    _context.SizeColorModels.Add(sizeColorModel);
-                else
-                    sizeColorModel = scm.First();
-
-                Bicycle bicycle = new Bicycle { SizeColorModel = sizeColorModel, Description = row.Cell(3).Value.ToString() };
-
-                //Шукаємо велосипед в базі
-                var bcs = (from b in _context.Bicycles
-                           where b.SizeColorModel == bicycle.SizeColorModel
-                           && b.Description == bicycle.Description
-                           select b).ToList();
-
-                if (!bcs.Any())
-                    _context.Bicycles.Add(bicycle);
-                else
+                try
                 {
-                    var tbcc = bcs.First();
-                    tbcc.Quantity = tbcc.Quantity == null ? 1 : tbcc.Quantity + 1;
-                    _context.Bicycles.Update(tbcc);
+                    //Створимо модель
+                    SizeColorModel sizeColorModel = new SizeColorModel();
+                    sizeColorModel.Model = tempObj;
+
+                    //Установлення розміру
+                    name = row.Cell(1).Value.ToString();
+                    ValidateName(name);
+                    tempObj = _context.Sizes.Where(s => s.SizeName.Equals(name)).FirstOrDefault();
+
+                    sizeColorModel.Size = tempObj != null ? tempObj : new Size { SizeName = name };
+                    if (tempObj == null) _context.Sizes.Add(sizeColorModel.Size);
+
+                    //Установлення кольору
+                    name = row.Cell(2).Value.ToString();
+                    ValidateName(name);
+                    tempObj = _context.Colors.Where(c => c.ColorName.Equals(name)).FirstOrDefault();
+
+                    sizeColorModel.Color = tempObj != null ? tempObj : new Color { ColorName = name };
+                    if (tempObj == null) _context.Colors.Add(sizeColorModel.Color);
+
+                    //Установлення розмір-колір-моделі
+                    tempObj = _context.SizeColorModels.Where(s => s.Size.SizeName == sizeColorModel.Size.SizeName)
+                                                      .Where(s => s.Color.ColorName == sizeColorModel.Color.ColorName)
+                                                      .Where(s => s.Model.ModelName == sizeColorModel.Model.ModelName)
+                                                      .FirstOrDefault();
+                    if (tempObj == null) _context.SizeColorModels.Add(sizeColorModel);
+                    else sizeColorModel = tempObj;
+
+                    //Установлення велосипеда
+                    name = row.Cell(3).Value.ToString();
+                    tempObj = _context.Bicycles.Where(b => b.SizeColorModel == sizeColorModel)
+                                               .Where(b => b.Description.Equals(name))
+                                               .FirstOrDefault();
+
+                    if (tempObj == null) _context.Bicycles.Add(new Bicycle { SizeColorModel = sizeColorModel,
+                                                                             Description = name,
+                                                                             Quantity = 1});
+                    else
+                    {
+                        tempObj.Quantity = tempObj.Quantity == null ? 1 : tempObj.Quantity + 1;
+                        _context.Bicycles.Update(tempObj);
+                    }
+                }
+                catch (Exception e)
+                {
+                    await Response.WriteAsync("<script>alert('" + e.Message + "');</script>");
+                }
+                void ValidateName(string name)
+                {
+                    if (!name.Any())
+                        throw new Exception("Invalid input");
                 }
             }
         }

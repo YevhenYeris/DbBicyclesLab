@@ -6,9 +6,12 @@
 
 <h1>Бренди</h1>
 
+@if (User.IsInRole("admin"))
+{
 <p>
     <a asp-action="Create">Додати новий</a>
 </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -34,7 +37,7 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.BrandName)
+                <a asp-action="CommonDetails" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.BrandName)</a>
             </td>
             <td>
                 @if (item.Description != null)
@@ -53,9 +56,12 @@
                 }
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                @if (User.IsInRole("admin"))
+                {
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> 
+                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> 
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> 
+                }
                 <a asp-action="GoToModels" asp-route-id="@item.Id">Моделі</a>
             </td>
         </tr>

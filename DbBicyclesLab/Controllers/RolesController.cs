@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using DbBicyclesLab.ViewModels;
 using DbBicyclesLab.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DbBicyclesLab.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class RolesController : Controller
     {
         private RoleManager<IdentityRole> _roleManager;
@@ -23,7 +25,7 @@ namespace DbBicyclesLab.Controllers
 
         public IActionResult Index() => View(_roleManager.Roles.ToList());
 
-        public IActionResult UserList() => View(_userManager.Users.ToList());
+        //public IActionResult UserList() => View(_userManager.Users.ToList());
 
         public async Task<IActionResult> Edit(string userId)
         {
@@ -67,11 +69,27 @@ namespace DbBicyclesLab.Controllers
 
                 await _userManager.RemoveFromRolesAsync(user, removedRoles);
 
-                return RedirectToAction("UserList");
+                return RedirectToAction("Index", "Users");
             }
 
             return NotFound();
         }
 
+        /*public async Task<IActionResult> Delete(string userId)
+        {
+            User model = await _userManager.FindByIdAsync(userId);
+
+            return View(model);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id);
+            if (user != null)
+                await _userManager.DeleteAsync(user);
+            return RedirectToAction(nameof(UserList));
+        }*/
     }
 }

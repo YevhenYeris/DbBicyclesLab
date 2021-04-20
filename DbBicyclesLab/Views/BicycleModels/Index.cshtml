@@ -7,9 +7,12 @@
 
 <h1>Моделі</h1>
 
+@if (User.IsInRole("admin"))
+{
 <p>
     <a asp-action="Create">Додати нову</a>
 </p>
+}
 
 <div class="container">
     <div>
@@ -80,7 +83,7 @@
                                 @Html.DisplayFor(modelItem => item.Price)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.ModelName)
+                                <a asp-action="CommonDetails" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.ModelName)</a>
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.ModelYear)
@@ -108,10 +111,13 @@
                                 }
                             </td>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
-                                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                                @if (User.IsInRole("admin"))
+                                {
+                                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> 
+                                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> 
+                                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> 
                                 <a asp-action="GoToBicycles" asp-route-id="@item.Id">Велосипеди</a>
+                                }
                             </td>
                         </tr>
                     }

@@ -35,8 +35,17 @@ namespace DbBicyclesLab
             string connectionIdentity = Configuration.GetConnectionString("IdentityConnection");
             services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionIdentity));
             services.AddControllersWithViews();
-            services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<IdentityContext>();
+            services.AddIdentity<User, IdentityRole>(opts =>
+            {
+                opts.Password.RequiredLength = 5;
+                opts.Password.RequireNonAlphanumeric = false;
+                opts.Password.RequireLowercase = false;
+                opts.Password.RequireUppercase = false;
+                opts.Password.RequireDigit = false;
+                opts.User.RequireUniqueEmail = true;
+            })
+                .AddEntityFrameworkStores<IdentityContext>()
+                .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

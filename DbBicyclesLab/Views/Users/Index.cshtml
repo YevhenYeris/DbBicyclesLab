@@ -1,0 +1,17 @@
+﻿@model IEnumerable<DbBicyclesLab.Models.User>
+
+<h2>Список користувачів</h2>
+<table class="table">
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Email</td>
+            <td>
+                <a class="btn btn-sm btn-primary" asp-controller="Roles" asp-action="Edit" asp-route-userid="@user.Id">Права доступу</a>
+                <a class="btn btn-sm btn-primary" asp-action="Delete" asp-route-userid="@user.Id">Видалити</a>
+                <a class="btn btn-sm btn-primary" asp-action="ChangePassword" asp-route-userid="@user.Id">Змінити пароль</a>
+                <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Details" asp-route-name="@user.UserName">Деталі</a>
+            </td>
+        </tr>
+    }
+</table>

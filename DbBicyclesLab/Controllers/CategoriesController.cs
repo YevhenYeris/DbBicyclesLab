@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace DbBicyclesLab.Controllers
 {
-    [Authorize(Roles = "admin")]
     public class CategoriesController : Controller
     {
         private readonly DBBicyclesContext _context;

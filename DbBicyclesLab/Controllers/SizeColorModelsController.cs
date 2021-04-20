@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DbBicyclesLab.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DbBicyclesLab.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class SizeColorModelsController : Controller
     {
         private readonly DBBicyclesContext _context;

@@ -6,9 +6,12 @@
 
 <h1>Категорії</h1>
 
+@if (User.IsInRole("admin"))
+{
 <p>
     <a asp-action="Create">Додати нову</a>
 </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -33,9 +36,12 @@
                         @(item.Description.ToString().Substring(0, 50)+"...")
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                    @if (User.IsInRole("admin"))
+                    {
+                    <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                    }
                     <a asp-action="GoToModels" asp-route-id="@item.Id">Моделі</a>
                 </td>
             </tr>

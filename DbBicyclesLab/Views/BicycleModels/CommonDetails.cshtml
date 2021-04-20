@@ -1,4 +1,4 @@
-﻿@model DbBicyclesLab.Models.BicycleModel
+﻿@model DbBicyclesLab.Models.BicycleModelViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -34,7 +34,7 @@
                                 @Html.DisplayNameFor(model => model.Brand)
                             </td>
                             <td>
-                                <a asp-action="CommonDetails" asp-route-id=@Model.Brand.Id>
+                                <a asp-controller="Brands" asp-action="CommonDetails" asp-route-id=@Model.Brand.Id>
                                     @Html.DisplayFor(model => model.Brand.BrandName)
                                 </a>
                             </td>
@@ -85,6 +85,30 @@
                             </td>
                             <td>
                                 @Html.DisplayFor(model => model.Price) грн.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Colors)
+                            </td>
+                            <td>
+                                @Html.DropDownList("color", new SelectList(Model.Colors.ToList(), "Id", "ColorName"))
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Sizes)
+                            </td>
+                            <td>
+                                @Html.DropDownList("size", new SelectList(Model.Sizes.ToList(), "Id", "SizeName"))
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.DisplayNameFor(model => model.Quantity)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => model.Quantity)
                             </td>
                         </tr>
                     </tbody>

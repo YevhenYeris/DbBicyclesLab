@@ -1,0 +1,45 @@
+﻿@model DbBicyclesLab.Models.User
+
+@{
+    ViewData["Title"] = "Account";
+}
+
+<h1>Акаунт користувача @Model.UserName</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            Ім'я
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt class="col-sm-2">
+            Email підтверджений
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EmailConfirmed)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Year)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Year)
+        </dd>
+    </dl>
+</div>
+
+@if (User.IsInRole("admin"))
+{
+    <a asp-controller="Users" asp-action="Index">Користувачі</a>
+}
+
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id">Змінити</a>
+    </div>

@@ -108,17 +108,37 @@ namespace DbBicyclesLab.Controllers
                 return NotFound();
             }
 
-            var bicycleModel = await _context.BicycleModels
+            var bm = await _context.BicycleModels
                 .Include(b => b.Brand)
                 .Include(b => b.Category)
                 .Include(b => b.Gender)
+                .Include(b => b.SizeColorModels)
+                .Include($"{ nameof(DBBicyclesContext.SizeColorModels)}.{nameof(SizeColorModel.Bicycles)}")
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (bicycleModel == null)
+
+            BicycleModelViewModel viewModel = new BicycleModelViewModel
+            {
+                Brand = bm.Brand,
+                Category = bm.Category,
+                Description = bm.Description,
+                Gender = bm.Gender,
+                Image = bm.Image,
+                ModelName = bm.ModelName,
+                ModelYear = bm.ModelYear,
+                Price = bm.Price,
+                SizeColorModels = bm.SizeColorModels
+            };
+
+            viewModel.Colors = bm.SizeColorModels.Select(s => _context.Colors.Find(s.ColorId)).Distinct().ToList();
+            viewModel.Sizes = bm.SizeColorModels.Select(s => _context.Sizes.Find(s.SizeId)).Distinct().ToList();
+            viewModel.Quantity = bm.SizeColorModels.Sum(s => s.Bicycles.Sum(b => b.Quantity));
+
+            if (bm == null)
             {
                 return NotFound();
             }
 
-            return View(bicycleModel);
+            return View(viewModel);
         }
 
         // GET: BicycleModels/Create
@@ -171,7 +191,7 @@ namespace DbBicyclesLab.Controllers
                 if (bvm.Image != null)
                 {
                     byte[] imageData = null;
-                    using (var binaryReader = new BinaryReader(bvm.Image.OpenReadStream()))
+                    using (var binaryReader = new BinaryReader(bvm.ImageFile.OpenReadStream()))
                     {
                         imageData = binaryReader.ReadBytes((int)bvm.Image.Length);
                     }
@@ -237,7 +257,7 @@ namespace DbBicyclesLab.Controllers
                     if (bicycleModel.Image != null)
                     {
                         byte[] imageData = null;
-                        using (var binaryReader = new BinaryReader(bicycleModel.Image.OpenReadStream()))
+                        using (var binaryReader = new BinaryReader(bicycleModel.ImageFile.OpenReadStream()))
                         {
                             imageData = binaryReader.ReadBytes((int)bicycleModel.Image.Length);
                         }
@@ -382,7 +402,8 @@ namespace DbBicyclesLab.Controllers
                     doc.InsertParagraph("\n");
                     paragraphTitle.Alignment = Alignment.center;
 
-                    List<string> attributes = new List<string> { "Бренд", "Модель", "Рік", "Вартість, грн", "Для кого", "Країна" };
+                    List<string> attributes = new List<string> { "Бренд", "Модель", "Рік", "Вартість, грн", 
+                                                                                     "Для кого", "Країна" };
                     Table t = doc.AddTable(models.Count + 1, 6);
                     t.Alignment = Alignment.center;
                     t.Design = TableDesign.ColorfulList;
